@@ -5,6 +5,9 @@ FROM nginx:alpine
 # Copy the HTML files into the default NGINX public directory
 COPY ./web /usr/share/nginx/html
 
+# Copy custom nginx configuration
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+
 # Expose port 80 (the default port NGINX listens on)
 EXPOSE 80
 

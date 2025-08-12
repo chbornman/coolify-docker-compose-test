@@ -4,6 +4,20 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.prod
+    depends_on:
+      - backend
     # Important: Don't specify ports here for Coolify!
     # Coolify handles port mapping automatically
     # Otherwise you'll get "port is already allocated" error
+  
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=sqlite:/data/counter.db
+    volumes:
+      - sqlite_data:/data
+
+volumes:
+  sqlite_data:

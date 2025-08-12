@@ -3,47 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello Coolify!</title>
+    <title>Coolify Counter App</title>
     <style>
         body {
-            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .container {
             text-align: center;
-            padding: 2rem;
+            padding: 3rem;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+            border-radius: 20px;
             backdrop-filter: blur(10px);
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            max-width: 500px;
+            width: 100%;
         }
         h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
-        p {
-            font-size: 1.2rem;
+        .subtitle {
+            font-size: 1rem;
             opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        .counter-display {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 2rem 0;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .counter-display.loading {
+            opacity: 0.5;
+        }
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 0.75rem 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            min-width: 100px;
+        }
+        button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .increment { background: rgba(76, 175, 80, 0.3); }
+        .decrement { background: rgba(244, 67, 54, 0.3); }
+        .reset { background: rgba(255, 152, 0, 0.3); }
+        
+        .status {
+            margin-top: 2rem;
+            padding: 0.5rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .status.success {
+            background: rgba(76, 175, 80, 0.2);
+        }
+        .status.error {
+            background: rgba(244, 67, 54, 0.2);
+        }
+        .tech-stack {
+            margin-top: 2rem;
+            font-size: 0.85rem;
+            opacity: 0.8;
         }
         .emoji {
             font-size: 2rem;
-            margin: 1rem;
+            margin: 0.5rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Hello Coolify!</h1>
-        <div class="emoji">🚀</div>
-        <p>Your Docker Compose deployment is working!</p>
-        <p>Deployed with nginx:alpine</p>
+        <h1>Coolify Counter App</h1>
+        <p class="subtitle">Rust Axum + SQLite + Docker Compose</p>
+        
+        <div class="counter-display" id="counter">
+            <span id="counter-value">Loading...</span>
+        </div>
+        
+        <div class="button-group">
+            <button class="increment" onclick="incrementCounter()">
+                ➕ Increment
+            </button>
+            <button class="decrement" onclick="decrementCounter()">
+                ➖ Decrement
+            </button>
+            <button class="reset" onclick="resetCounter()">
+                🔄 Reset
+            </button>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div class="tech-stack">
+            <div class="emoji">🦀 🚀 📦</div>
+            <p><strong>Tech Stack:</strong></p>
+            <p>Nginx • Rust Axum • SQLite • Docker</p>
+        </div>
     </div>
+
+    <script>
+        let isLoading = false;
+
+        async function fetchCounter() {
+            try {
+                const response = await fetch('/api/counter');
+                if (!response.ok) throw new Error('Failed to fetch counter');
+                const data = await response.json();
+                updateDisplay(data.value);
+                showStatus('Counter loaded successfully', 'success');
+            } catch (error) {
+                console.error('Error fetching counter:', error);
+                showStatus('Error loading counter', 'error');
+                updateDisplay('Error');
+            }
+        }
+
+        async function incrementCounter() {
+            if (isLoading) return;
+            setLoading(true);
+            try {
+                const response = await fetch('/api/counter/increment', { method: 'POST' });
+                if (!response.ok) throw new Error('Failed to increment');
+                const data = await response.json();
+                updateDisplay(data.value);
+                showStatus('Incremented!', 'success');
+            } catch (error) {
+                console.error('Error incrementing:', error);
+                showStatus('Error incrementing counter', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function decrementCounter() {
+            if (isLoading) return;
+            setLoading(true);
+            try {
+                const response = await fetch('/api/counter/decrement', { method: 'POST' });
+                if (!response.ok) throw new Error('Failed to decrement');
+                const data = await response.json();
+                updateDisplay(data.value);
+                showStatus('Decremented!', 'success');
+            } catch (error) {
+                console.error('Error decrementing:', error);
+                showStatus('Error decrementing counter', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function resetCounter() {
+            if (isLoading) return;
+            if (!confirm('Are you sure you want to reset the counter to 0?')) return;
+            
+            setLoading(true);
+            try {
+                const response = await fetch('/api/counter/reset', { method: 'POST' });
+                if (!response.ok) throw new Error('Failed to reset');
+                const data = await response.json();
+                updateDisplay(data.value);
+                showStatus('Counter reset to 0', 'success');
+            } catch (error) {
+                console.error('Error resetting:', error);
+                showStatus('Error resetting counter', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function updateDisplay(value) {
+            const counterElement = document.getElementById('counter-value');
+            counterElement.textContent = value;
+            
+            // Add a pulse animation
+            const display = document.getElementById('counter');
+            display.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                display.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        function setLoading(loading) {
+            isLoading = loading;
+            const buttons = document.querySelectorAll('button');
+            const display = document.getElementById('counter');
+            
+            buttons.forEach(btn => btn.disabled = loading);
+            
+            if (loading) {
+                display.classList.add('loading');
+            } else {
+                display.classList.remove('loading');
+            }
+        }
+
+        function showStatus(message, type) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+            statusElement.style.display = 'block';
+            
+            setTimeout(() => {
+                statusElement.style.display = 'none';
+            }, 3000);
+        }
+
+        // Load counter on page load
+        document.addEventListener('DOMContentLoaded', fetchCounter);
+        
+        // Refresh counter every 30 seconds
+        setInterval(fetchCounter, 30000);
+    </script>
 </body>
 </html>

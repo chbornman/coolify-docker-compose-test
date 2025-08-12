@@ -1,14 +1,28 @@
-# Coolify Docker Compose Test Setup
+# Coolify Docker Compose Test Setup with Counter App
 
-This is a simple test setup for deploying a static website using Docker Compose on Coolify, based on the tutorial from [dev.to](https://dev.to/mandrasch/simple-coolify-example-with-docker-compose-github-deployments-53m).
+A full-stack counter application demonstrating Docker Compose deployment on Coolify, featuring a Rust Axum backend with SQLite database.
+
+## Features
+
+- 🦀 **Rust Axum Backend** - Fast, type-safe API server
+- 📦 **SQLite Database** - Persistent counter storage
+- 🎨 **Modern UI** - Interactive counter with increment/decrement/reset
+- 🐳 **Docker Compose** - Multi-container orchestration
+- 🚀 **Coolify Ready** - Optimized for Coolify deployment
 
 ## Project Structure
 
 ```
 coolify_test/
+├── backend/
+│   ├── src/
+│   │   └── main.rs         # Rust Axum API server
+│   ├── Cargo.toml          # Rust dependencies
+│   └── Dockerfile          # Backend container
 ├── web/
-│   └── index.html          # Static HTML page
-├── Dockerfile.prod         # Production Dockerfile using nginx:alpine
+│   └── index.html          # Interactive counter UI
+├── nginx.conf              # Nginx reverse proxy config
+├── Dockerfile.prod         # Frontend nginx container
 ├── docker-compose.production.yaml  # For Coolify deployment
 ├── docker-compose.yaml     # For local testing
 └── README.md
@@ -63,21 +77,31 @@ docker-compose down
 - If you need to mount files/directories, enable "Preserve Repository During Deployment" in Coolify settings
 - The production compose file uses the build context, while local testing can use volume mounts for development
 
+## API Endpoints
+
+The backend provides these REST endpoints:
+
+- `GET /api/counter` - Get current counter value
+- `POST /api/counter/increment` - Increment counter by 1
+- `POST /api/counter/decrement` - Decrement counter by 1
+- `POST /api/counter/reset` - Reset counter to 0
+- `GET /api/health` - Health check endpoint
+
 ## Files Explanation
 
-### `Dockerfile.prod`
-Uses nginx:alpine to serve static files from the `/usr/share/nginx/html` directory.
+### Backend Components
+- **`backend/src/main.rs`** - Axum web server with SQLite integration
+- **`backend/Dockerfile`** - Multi-stage build for optimized Rust binary
+- **`backend/Cargo.toml`** - Rust dependencies (Axum, SQLx, Tokio)
 
-### `docker-compose.production.yaml`
-Minimal compose file for Coolify - builds the Docker image but doesn't specify ports (Coolify handles this).
+### Frontend Components
+- **`web/index.html`** - Interactive counter UI with JavaScript
+- **`nginx.conf`** - Reverse proxy configuration for API routing
+- **`Dockerfile.prod`** - Nginx container serving static files
 
-### `docker-compose.yaml`
-Local development version with:
-- Port mapping (8080:80)
-- Volume mount for live editing of HTML files
-
-### `web/index.html`
-Simple HTML page with gradient background and modern styling to verify the deployment works.
+### Docker Compose Files
+- **`docker-compose.production.yaml`** - Production config without ports (Coolify manages this)
+- **`docker-compose.yaml`** - Local development with port mappings and volumes
 
 ## Troubleshooting
 
@@ -102,9 +126,19 @@ This basic setup can be extended to:
 - Set up SSL certificates
 - Add health checks
 
+## Tech Stack
+
+- **Backend**: Rust, Axum, SQLx, Tokio
+- **Database**: SQLite (persistent volume)
+- **Frontend**: HTML5, JavaScript, CSS3
+- **Web Server**: Nginx (reverse proxy)
+- **Containerization**: Docker, Docker Compose
+- **Deployment**: Coolify
+
 ## Resources
 
 - [Original Tutorial](https://dev.to/mandrasch/simple-coolify-example-with-docker-compose-github-deployments-53m)
 - [Coolify Documentation](https://coolify.io/docs)
 - [Docker Compose Documentation](https://docs.docker.com/compose/)
-- [nginx Docker Image](https://hub.docker.com/_/nginx)
+- [Axum Web Framework](https://github.com/tokio-rs/axum)
+- [SQLx Database Library](https://github.com/launchbadge/sqlx)

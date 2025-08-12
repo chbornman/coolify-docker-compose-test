@@ -1,0 +1,20 @@
+# Rust
+backend/target/
+backend/Cargo.lock
+**/*.rs.bk
+
+# SQLite
+*.db
+*.db-shm
+*.db-wal
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
