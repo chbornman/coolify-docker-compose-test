@@ -19,7 +19,8 @@ WORKDIR /app
 
 COPY --from=builder /app/target/release/counter-backend /app/counter-backend
 
-RUN mkdir -p /data
+# Create data directory with proper permissions
+RUN mkdir -p /data && chmod 777 /data
 
 EXPOSE 3000
 

@@ -15,7 +15,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=sqlite:/data/counter.db
+      - DATABASE_URL=sqlite:/data/counter.db?mode=rwc
     volumes:
       - sqlite_data:/data
 

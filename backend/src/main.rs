@@ -26,11 +26,15 @@ struct Counter {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
+    // Ensure the data directory exists
+    std::fs::create_dir_all("/data").ok();
+    
     let database_url = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "sqlite:/data/counter.db".to_string());
+        .unwrap_or_else(|_| "sqlite:/data/counter.db?mode=rwc".to_string());
     
     info!("Connecting to database: {}", database_url);
     
+    // Connect with create if not exists mode
     let pool = SqlitePool::connect(&database_url).await?;
     
     sqlx::query(
